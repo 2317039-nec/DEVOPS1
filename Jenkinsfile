@@ -1,48 +1,52 @@
-pipeline {
-    agent any
-
-    stages {
-        stage('Build') {
-            steps {
-                echo 'Building the project...'
-                bat 'javac Calculator.java'
-            }
-        }
-
-        stage('Input') {
-            steps {
-                script {
-                    // Ask user for input
-                    def userInput = input(
-                        id: 'UserInput',
-                        message: 'Enter two numbers and one operator (+, -, *, /):',
-                        parameters: [
-                            string(name: 'NUM1', defaultValue: '5', description: 'Enter first number'),
-                            string(name: 'NUM2', defaultValue: '3', description: 'Enter second number'),
-                            string(name: 'OP', defaultValue: '+', description: 'Enter operator (+, -, *, /)')
-                        ]
-                    )
-                    
-                    // Save values to environment variables
-                    env.NUM1 = userInput.NUM1
-                    env.NUM2 = userInput.NUM2
-                    env.OP = userInput.OP
-                }
-            }
-        }
-
-        stage('Run Calculator') {
-            steps {
-                echo "Running Calculator with inputs: ${env.NUM1}, ${env.NUM2}, ${env.OP}"
-                bat "java Calculator ${env.NUM1} ${env.NUM2} ${env.OP}"
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Deploying the application...'
-                echo 'Deployment successful! ✅'
-            }
-        }
-    }
+pipeline { 
+    agent any 
+ 
+    stages { 
+        stage('Create Dictionary App') { 
+            steps { 
+                script { 
+                    writeFile file: 'DictionaryApp.java', text: ''' 
+import java.util.HashMap; 
+ 
+public class DictionaryApp { 
+    public static void main(String[] args) { 
+        System.out.println("=== Dictionary App ==="); 
+ 
+        // Predefined dictionary 
+        HashMap<String, String> dictionary = new HashMap<>(); 
+        dictionary.put("apple", "A fruit that is round and usually red or green."); 
+        dictionary.put("java", "A high-level programming language."); 
+        dictionary.put("jenkins", "An open-source automation server used for CI/CD."); 
+        dictionary.put("pipeline", "A sequence of automated steps in software development."); 
+ 
+        // Words to "search" 
+        String[] wordsToSearch = {"apple", "java", "jenkins", "pipeline"}; 
+ 
+        // Display results 
+        for(String word : wordsToSearch) { 
+            System.out.println("Word: " + word); 
+            System.out.println("Meaning: " + dictionary.get(word)); 
+            System.out.println("----------------------------"); 
+        } 
+ 
+        System.out.println("=== End of Dictionary ==="); 
+    } 
+} 
+''' 
+                } 
+            } 
+        } 
+ 
+        stage('Compile Dictionary App') { 
+            steps { 
+                bat 'javac DictionaryApp.java' 
+            } 
+        } 
+ 
+        stage('Run Dictionary App') { 
+            steps { 
+                bat 'java DictionaryApp' 
+            } 
+        } 
+    } 
 }
